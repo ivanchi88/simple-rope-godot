@@ -11,11 +11,7 @@ var gravity = Vector2(0, 98)
 const numOfIterations = 8
 const maxDistanceBetweenPoints = 5
 
-const initialPosition = Vector2(200, 50) 
-
-# Declare member variables here. Examples:
-# var a = 2
-# var b = "text"
+const initialPosition = Vector2(200, 50)  
 
 
 # Called when the node enters the scene tree for the first time.
