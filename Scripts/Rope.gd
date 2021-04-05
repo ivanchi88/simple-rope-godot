@@ -11,10 +11,7 @@ var gravity = Vector2(0, 98)
 const numOfIterations = 8
 const maxDistanceBetweenPoints = 5
 
-const initialPosition = Vector2(200, 50)
-
-const delay = 5
-var time = 0
+const initialPosition = Vector2(200, 50) 
 
 # Declare member variables here. Examples:
 # var a = 2
@@ -32,10 +29,7 @@ func _ready():
 		oldParticlesPosition[i] = Vector2(initialPosition.x + i + 2, initialPosition.y)
 		accumulatedForces[i] = gravity
 
-func _physics_process(delta):
-	time += delta
-	if(time < delay):
-		return
+func _physics_process(delta): 
 	accumulateForces()
 	verlet(delta)
 	satisfyConstraints()
