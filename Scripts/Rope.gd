@@ -1,7 +1,6 @@
 extends Node2D
 
-var ropeLength = 101
-
+var ropeLength = 200
 var  particlesPosition:  PoolVector2Array = PoolVector2Array()
 var  oldParticlesPosition: PoolVector2Array = PoolVector2Array()
 var	 accumulatedForces : PoolVector2Array = PoolVector2Array()
@@ -9,7 +8,7 @@ var	 accumulatedForces : PoolVector2Array = PoolVector2Array()
 var gravity = Vector2(0, 98)
 
 const numOfIterations = 8
-const maxDistanceBetweenPoints = 5
+const maxDistanceBetweenPoints = 3
 
 const initialPosition = Vector2(200, 50)  
 
@@ -48,19 +47,33 @@ func verlet(delta) :
 		oldParticlesPosition[i] = position
 
 func satisfyConstraints():
+	var space = get_world_2d().direct_space_state
+
 	for _iteration in range(numOfIterations):
 		for i in range(ropeLength):
 			if(i == ropeLength - 1):
 				continue
 			
+			#check rope lenght
 			var x1 = particlesPosition[i]
 			var x2 = particlesPosition[i + 1]
 
 			var distance = x2 - x1
-			var aaay: float = sqrt(distance.dot(distance)) + 0.000001
-			var diff = (aaay - maxDistanceBetweenPoints) / aaay
-			particlesPosition[i] = x1 + (distance * 0.5 * diff)
-			particlesPosition[i + 1] = x2 - (distance * 0.5 * diff) 
+
+			var delt: float = sqrt(distance.dot(distance)) + 0.000001
+			var diff = (delt - maxDistanceBetweenPoints) / delt
+
+			var newX1 = x1 + (distance * 0.5 * diff)
+			var newX2 =  x2 - (distance * 0.5 * diff) 
+
+			#check rope colisions
+			var collisions = space.intersect_point(newX1)
+			if (collisions.size() > 0):
+				var correction = newX1 - oldParticlesPosition[i]
+				newX1 = x1 - correction * 2 #BOUNCE! 
+
+			particlesPosition[i] = newX1
+			particlesPosition[i + 1] = newX2
 
 		particlesPosition[0] = firstPosition
 	
