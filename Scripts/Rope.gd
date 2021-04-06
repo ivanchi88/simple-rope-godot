@@ -13,6 +13,8 @@ const maxDistanceBetweenPoints = 5
 
 const initialPosition = Vector2(200, 50)  
 
+var firstPosition = initialPosition
+var secondPosition = null 
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
@@ -60,7 +62,11 @@ func satisfyConstraints():
 			particlesPosition[i] = x1 + (distance * 0.5 * diff)
 			particlesPosition[i + 1] = x2 - (distance * 0.5 * diff) 
 
-		particlesPosition[0] = Vector2(initialPosition.x, initialPosition.y)
+		particlesPosition[0] = firstPosition
+	
+		if(secondPosition != null) :
+			particlesPosition[-1] = secondPosition
+
 
 
 func _draw():
@@ -74,6 +80,15 @@ func _draw():
 		
 func _process(_delta):
 	update()
+
+func _input(event):
+	# Mouse in viewport coordinates.
+	if event is InputEventMouseButton && event.is_pressed():
+		if(secondPosition == null) :
+			secondPosition = event.position 
+		else:
+			firstPosition = event.position
+			secondPosition = null
 
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
