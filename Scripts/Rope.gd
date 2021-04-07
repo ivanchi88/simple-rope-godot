@@ -1,22 +1,28 @@
 extends Node2D
 
-var ropeLength = 200
+var ropeLength = 100
 var  particlesPosition:  PoolVector2Array = PoolVector2Array()
 var  oldParticlesPosition: PoolVector2Array = PoolVector2Array()
 var	 accumulatedForces : PoolVector2Array = PoolVector2Array()
 
+var  segmentShapes = []
+
 var gravity = Vector2(0, 98)
 
 const numOfIterations = 8
-const maxDistanceBetweenPoints = 3
+const maxDistanceBetweenPoints = 5
 
 const initialPosition = Vector2(200, 50)  
 
 var firstPosition = initialPosition
 var secondPosition = null 
 
+var colitions : StaticBody2D = null
+
 # Called when the node enters the scene tree for the first time.
 func _ready():
+	colitions = StaticBody2D.new() 
+	self.add_child(colitions)
 	particlesPosition.resize(ropeLength)
 	oldParticlesPosition.resize(ropeLength)
 	accumulatedForces.resize(ropeLength)
@@ -25,7 +31,14 @@ func _ready():
 		particlesPosition[i] = Vector2(initialPosition.x + i + 2, initialPosition.y)
 		oldParticlesPosition[i] = Vector2(initialPosition.x + i + 2, initialPosition.y)
 		accumulatedForces[i] = gravity
-
+		if(i < ropeLength - 1):
+			var particleShape = SegmentShape2D.new()
+			particleShape.a = particlesPosition[i]
+			particleShape.b = particlesPosition[i + 1]
+			var shape = CollisionShape2D.new()
+			shape.set_shape(particleShape)
+			segmentShapes.append(particleShape)
+			colitions.add_child(shape)
 func _physics_process(delta): 
 	accumulateForces()
 	verlet(delta)
@@ -75,11 +88,15 @@ func satisfyConstraints():
 			particlesPosition[i] = newX1
 			particlesPosition[i + 1] = newX2
 
+			segmentShapes[i].a = newX1
+			segmentShapes[i].b = newX2
+
 		particlesPosition[0] = firstPosition
+		segmentShapes[0].a = firstPosition
 	
 		if(secondPosition != null) :
-			particlesPosition[-1] = secondPosition
-
+			particlesPosition[-1] = secondPosition 
+			segmentShapes[-2].b = secondPosition
 
 
 func _draw():
