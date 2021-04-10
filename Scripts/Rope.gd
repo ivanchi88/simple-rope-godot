@@ -1,5 +1,7 @@
 extends Node2D
 
+var hook = preload("res://Scenes/Hook.tscn") 
+
 var ropeLength = 100
 var  particlesPosition:  PoolVector2Array = PoolVector2Array()
 var  oldParticlesPosition: PoolVector2Array = PoolVector2Array()
@@ -10,14 +12,17 @@ var  segmentShapes = []
 var gravity = Vector2(0, 98)
 
 const numOfIterations = 8
-const maxDistanceBetweenPoints = 5
+const maxDistanceBetweenPoints = 1
 
-const initialPosition = Vector2(200, 50)  
+const initialPosition = Vector2(0, 0)  
 
-var firstPosition = initialPosition
-var secondPosition = null 
+var firstPosition = initialPosition 
 
 var colitions : StaticBody2D = null
+
+var speed: Vector2 = Vector2.ZERO
+var nextExpectedParabolicPosition = Vector2.ZERO
+var time = 0
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
@@ -25,11 +30,11 @@ func _ready():
 	self.add_child(colitions)
 	particlesPosition.resize(ropeLength)
 	oldParticlesPosition.resize(ropeLength)
-	accumulatedForces.resize(ropeLength)
+	accumulatedForces.resize(ropeLength) 
 
 	for i in range(ropeLength):
-		particlesPosition[i] = Vector2(initialPosition.x + i + 2, initialPosition.y)
-		oldParticlesPosition[i] = Vector2(initialPosition.x + i + 2, initialPosition.y)
+		particlesPosition[i] = Vector2(initialPosition)
+		oldParticlesPosition[i] = Vector2(initialPosition)
 		accumulatedForces[i] = gravity
 		if(i < ropeLength - 1):
 			var particleShape = SegmentShape2D.new()
@@ -40,6 +45,7 @@ func _ready():
 			segmentShapes.append(particleShape)
 			colitions.add_child(shape)
 func _physics_process(delta): 
+	calculateParabolicMovement(delta)
 	accumulateForces()
 	verlet(delta)
 	satisfyConstraints()
@@ -53,7 +59,7 @@ func verlet(delta) :
 		var position = particlesPosition[i]
 		var oldPosition = oldParticlesPosition[i]
 		
-		var acceleration = accumulatedForces[i]
+		var acceleration = Vector2.ZERO
 		var newPosition = position + (position - oldPosition + acceleration * delta * delta)
 
 		particlesPosition[i] = newPosition
@@ -94,9 +100,10 @@ func satisfyConstraints():
 		particlesPosition[0] = firstPosition
 		segmentShapes[0].a = firstPosition
 	
-		if(secondPosition != null) :
-			particlesPosition[-1] = secondPosition 
-			segmentShapes[-2].b = secondPosition
+		if (abs(particlesPosition[-1].distance_to(particlesPosition[-2])) < maxDistanceBetweenPoints):
+			particlesPosition[-1] = nextExpectedParabolicPosition 
+			segmentShapes[-2].b = nextExpectedParabolicPosition
+		pass
 
 
 func _draw():
@@ -113,13 +120,17 @@ func _process(_delta):
 
 func _input(event):
 	# Mouse in viewport coordinates.
-	if event is InputEventMouseButton && event.is_pressed():
-		if(secondPosition == null) :
-			secondPosition = event.position 
-		else:
-			firstPosition = event.position
-			secondPosition = null
+	if event is InputEventMouseButton && event.is_pressed():  
+			firstPosition = event.position 
 
+func calculateParabolicMovement (delta):
+	time += delta
+	var x = speed.x * time 
+	var y = (speed.y * time) + (gravity.y * time * time)/2
+
+	speed.y = gravity.y * time
+
+	nextExpectedParabolicPosition = Vector2(x, y) 
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 #func _process(delta):
