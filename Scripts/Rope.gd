@@ -128,8 +128,8 @@ func _draw():
 
 func moveHook():
 	if(hook != null && !hooked):
-		hook.position = hookedPos
-		hook.rotation = (gravity + accel).angle() + PI/2
+		hook.position = particlesPosition[-1]
+		hook.rotation = (accel).angle() + PI/2
 		
 func _process(_delta):
 	update()
