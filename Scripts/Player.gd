@@ -5,9 +5,9 @@ export (int) var jump_speed = -900
 export (int) var gravity = 4000 
 var velocity = Vector2.ZERO
 
-var rope = preload("res://Scenes/Rope.tscn") 
+var ropeScene = preload("res://Scenes/Rope.tscn") 
 var hasRope = false 
-var ropee = null
+var rope = null
 
 var cooldown = 10
 var passed = cooldown
@@ -17,15 +17,20 @@ func _ready():
 	pass # Replace with function body.
 
 func _physics_process(delta):
-	
+
+	if(rope != null):
+		if (rope.ropeLimit && rope.hooked):
+			if (rope.lastPosition().x - ( global_position.x + velocity.x) < 0):
+				velocity.x = 0 if velocity.x > 0 else velocity.x
+			else:
+				velocity.x = 0 if velocity.x <= 0 else velocity.x
+		
+		rope.firstPosition = global_position
 	
 	velocity.y += gravity * delta
 	velocity = move_and_slide(velocity, Vector2.UP)
 
-	passed += delta
-
-	if(ropee != null):
-		ropee.firstPosition = position
+	passed += delta 
 
 
 func _input(event):
@@ -46,13 +51,14 @@ func _input(event):
 	if (cooldown < passed && Input.is_mouse_button_pressed(BUTTON_LEFT)):
 		var mouse = get_viewport().get_mouse_position()
 		var ropeDir = (mouse - global_position).normalized()
-		var ropeInstance = ropee 
+		var ropeInstance = rope 
 		if(ropeInstance == null):
-			ropeInstance = rope.instance()
-			ropee = ropeInstance
+			ropeInstance = ropeScene.instance()
+			rope = ropeInstance
 
 		ropeInstance.accel = ropeDir.normalized() * 4000
-		ropee.firstPosition = position
+		rope.firstPosition = global_position
+		rope.hooked = false
 
 		get_parent().add_child(ropeInstance)
 
