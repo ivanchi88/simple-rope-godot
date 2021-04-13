@@ -8,7 +8,11 @@ Just a basic rope using a Verlet integration scheme in Godot
 
 ![image](https://user-images.githubusercontent.com/15201222/113835997-c8805000-978c-11eb-87d7-aaadfe09524b.png)
 
-![image](https://user-images.githubusercontent.com/15201222/113836005-ca4a1380-978c-11eb-8ec1-70eb73f02b0c.png)
+![image](https://user-images.githubusercontent.com/15201222/113836005-ca4a1380-978c-11eb-8ec1-70eb73f02b0c.png) 
+
+![imagen](https://user-images.githubusercontent.com/15201222/113923079-681efc00-97e8-11eb-905d-ec2387751993.png)
+
+![imagen](https://user-images.githubusercontent.com/15201222/113923087-69e8bf80-97e8-11eb-8fc5-31e819516e86.png)
 
 
 
