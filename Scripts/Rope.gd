@@ -2,9 +2,9 @@ extends Node2D
 
 var hookScene = preload("res://Scenes/Hook.tscn") 
 
-var ropeLength = 50
+var ropeLength = 100
 const numOfIterations = 8
-const maxDistanceBetweenPoints = 5
+const maxDistanceBetweenPoints = 1
 
 var  particlesPosition:  PoolVector2Array = PoolVector2Array()
 var  oldParticlesPosition: PoolVector2Array = PoolVector2Array()
@@ -23,8 +23,8 @@ var hookable_layer = 16
 
 var hook
 var hookedPos = Vector2.ZERO
-var hooked = false
-var ropeLimit = false
+var hooked = false 
+var retractForce = Vector2.ZERO
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
@@ -70,11 +70,11 @@ func satisfyConstraints():
 	var space = get_world_2d().direct_space_state
 
 	var ropeSize = 0
+	retractForce = Vector2.ZERO
 
 	for _iteration in range(numOfIterations):
 		hooked = hookedPos != Vector2.ZERO || false
-		ropeSize = 0
-		ropeLimit = false
+		ropeSize = 0 
 		for i in range(ropeLength):
 			if(i == ropeLength - 1):
 				continue
@@ -105,16 +105,17 @@ func satisfyConstraints():
 
 		particlesPosition[0] = firstPosition 
 		
-		if (space.intersect_point(global_position + particlesPosition[-1], 32, [], hookable_layer).size() > 0):
+		if (!hooked && space.intersect_point(global_position + particlesPosition[-1], 32, [], hookable_layer).size() > 0):
 			hooked = true
 			hookedPos = particlesPosition[-1]
 
 		if(hooked):
 			particlesPosition[-1] = hookedPos 
 
-	if(ropeSize <= abs(particlesPosition[0].distance_to(particlesPosition[-1]))):
-		firstPosition = particlesPosition[0]
-		ropeLimit = true
+	if(hooked && ropeSize * 1.5 <= particlesPosition[0].distance_to(particlesPosition[-1])):
+		var offset = abs(ropeSize - particlesPosition[0].distance_to(particlesPosition[-1]) )
+		retractForce = (particlesPosition[0] - particlesPosition[-1]).normalized() * (offset * offset * -1)
+		firstPosition = oldParticlesPosition[0] 
 	
 			
 func _draw():
@@ -122,9 +123,9 @@ func _draw():
 		if (i == ropeLength - 1):
 			continue
 		
-		draw_line(particlesPosition[i], particlesPosition[i + 1], Color8(100,25, 100),  3, true) 
+		#draw_line(particlesPosition[i], particlesPosition[i + 1], Color8(100,25, 100),  3, true) 
 	
-		#draw_circle(particlesPosition[i], 2, Color8(140, 0, 140))
+		draw_circle(particlesPosition[i], 2, Color8(140, 0, 140))
 
 func moveHook():
 	if(hook != null && !hooked):
